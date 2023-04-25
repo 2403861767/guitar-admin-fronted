@@ -1,7 +1,8 @@
 import {createRouter, createWebHashHistory} from "vue-router";
 
+// @ts-ignore
 const routes = [
-    { path: '/', component: ()=>import('../components/HelloWorld.vue') },
+    { path: '/', component: ()=>import('../layouts/BaseLayout.vue') },
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置
