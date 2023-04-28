@@ -2,25 +2,61 @@
     <div class="top-box">
         <div class="main-box">
             <div :class="['container', 'container-register', { 'is-txl': isLogin }]">
-                <form>
+                <a-form
+                    :model="registerForm"
+                    name="registerForm"
+                    ref="registerRef"
+                    :rules="registerRules"
+                    @finish="register"
+                >
                     <h2 class="title">创建账户</h2>
                     <span class="text">注册一个账户</span>
+                    <a-form-item
+                        name="userAccount"
+                    >
                     <a-input class="form__input"  v-model:value="registerForm.userAccount" type="text" placeholder="请输入账号"/>
+                    </a-form-item>
+                    <a-form-item
+                        name="userPassword"
+                    >
                     <a-input class="form__input" v-model:value="registerForm.userPassword" type="password" placeholder="请输入密码"/>
+                    </a-form-item>
+                    <a-form-item
+                        name="checkPassword"
+                    >
                     <a-input class="form__input" v-model:value="registerForm.checkPassword" type="password" placeholder="再次输入密码"/>
-                    <div class="primary-btn">立即注册</div>
-                </form>
+                    </a-form-item>
+                    <a-form-item>
+                        <a-button class="primary-btn" html-type="submit">立即注册</a-button>
+                    </a-form-item>
+                </a-form>
             </div>
             <div
                     :class="['container', 'container-login', { 'is-txl is-z200': isLogin }]"
             >
-                <form>
+                <a-form
+                    :model="loginForm"
+                    name="loginForm"
+                    ref="loginRef"
+                    :rules="loginRules"
+                    @finish="login"
+                >
                     <h2 class="title">登录账户</h2>
                     <span class="text">登录你的账户</span>
-                    <a-input class="form__input"  v-model:value="loginForm.userAccount" type="text" placeholder="请输入账号"/>
-                    <a-input class="form__input" v-model:value="loginForm.userPassword" type="password" placeholder="请输入密码"/>
-                    <div class="primary-btn">立即登录</div>
-                </form>
+                    <a-form-item
+                        name="userAccount"
+                    >
+                        <a-input  class="form__input"  v-model:value="loginForm.userAccount" type="text" placeholder="请输入账号"/>
+                    </a-form-item>
+                    <a-form-item
+                        name="userPassword"
+                    >
+                        <a-input class="form__input" v-model:value="loginForm.userPassword" type="password" placeholder="请输入密码"/>
+                    </a-form-item>
+                    <a-form-item>
+                        <a-button class="primary-btn" html-type="submit">立即登录</a-button>
+                    </a-form-item>
+                </a-form>
             </div>
             <div :class="['switch', { login: isLogin }]">
                 <div class="switch__circle"></div>
@@ -34,9 +70,9 @@
                             : '要使用该系统，请填写您的个人信息来登录'
                         }}
                     </p>
-                    <div class="primary-btn" @click="isLogin = !isLogin">
+                    <a-button class="primary-btn" @click="isLogin = !isLogin">
                         {{ isLogin ? '立即注册' : '立即登录' }}
-                    </div>
+                    </a-button>
                 </div>
             </div>
         </div>
@@ -45,13 +81,83 @@
 
 <script setup lang="ts">
 import {reactive, ref} from "vue";
+import {FormInstance, message} from "ant-design-vue";
+import {Rule} from "ant-design-vue/es/form";
+import {useRouter} from "vue-router";
+import myAxios from "../plugins/myAxios.ts";
 
-const isLogin = ref(false)
+const isLogin = ref(true)
+const router = useRouter()
+// 自定义校验规则
+const loginRef =  ref<FormInstance>()
+const registerRef =  ref<FormInstance>()
+// 账号校验
+let accountValidator = async (_rule: Rule, value: string) => {
+    const userNamePattern = /^[a-zA-Z0-9_-]{4,16}$/;
+    if (value === '') {
+        return Promise.reject('账号不能为空');
+    }else if (value.length < 4){
+        return Promise.reject("账号不能小于4位")
+    }
+    else if (!userNamePattern.test(value)) {
+        return Promise.reject("账号格式不符合要求");
+    }else if (value.length > 16){
+        return Promise.reject("账号过长")
+    }
+    else {
+        return Promise.resolve();
+    }
+};
+// 密码校验
+let passwordValidator = async (_rule: Rule, value: string) => {
+    //密码正则，最少8位，包括至少1个大写字母，1个小写字母，1个数字，1个特殊字符
+    if (value === '') {
+        return Promise.reject('密码不能为空');
+    }else if (value.length < 8){
+        return Promise.reject("密码不能小于8位")
+    }
+    else {
+        return Promise.resolve();
+    }
+};
+let checkPasswordValidator = async (_rule: Rule, value: string) => {
+    //密码正则，最少8位，包括至少1个大写字母，1个小写字母，1个数字，1个特殊字符
+    if (value === '') {
+        return Promise.reject('校验密码不能为空');
+    }else if (value.length < 8){
+        return Promise.reject("校验密码不能小于8位")
+    }else if(value!== registerForm.userPassword){
+        return Promise.reject("校验密码必须与密码相同")
+    }
+    else {
+        return Promise.resolve();
+    }
+};
+const loginRules: Record<string, Rule[]> = {
+    userAccount: [{ required: true, validator: accountValidator, trigger: 'change' }],
+    userPassword: [{ required: true, validator: passwordValidator, trigger: 'change' }],
+};
+const registerRules: Record<string, Rule[]> = {
+    userAccount: [{ required: true, validator: accountValidator, trigger: 'change' }],
+    userPassword: [{ required: true, validator: passwordValidator, trigger: 'change' }],
+    checkPassword: [{ required: true, validator: checkPasswordValidator, trigger: 'change' }],
+};
+
+
+interface loginForm{
+    userAccount: string;
+    userPassword: string;
+}
 const loginForm = reactive({
     userAccount: '',
     userPassword: '',
 })
 
+interface registerForm{
+    userAccount: string;
+    userPassword: string;
+    checkPassword: string;
+}
 
 const registerForm = reactive({
     userAccount: '',
@@ -60,15 +166,36 @@ const registerForm = reactive({
 })
 
 
-const login = () => {
+const login = async () => {
+    const res = await myAxios.post('/user/login',loginForm)
+    if (res.code === 0){
+        message.success('登录成功')
+        localStorage.setItem('user',JSON.stringify(res.data))
+        await router.replace('/')
+    }else {
+        message.error(res.message)
+    }
 }
-const register = () => {
+// TODO 待测试
+const register = async () => {
+    const res = await myAxios.post('/user/register', registerForm)
+    if (res.code === 0){
+        message.success("注册成功")
+        isLogin.value = true
+    }else {
+        message.error(res.message)
+    }
 }
 
 
 </script>
 
-<style lang="scss" scoped>
+<style lang="less"  scoped>
+.ant-input-password {
+    .ant-input {
+
+    }
+}
 .top-box {
   background-color: #ecf0f3;
   height: 100vh;
@@ -240,7 +367,6 @@ const register = () => {
     border-radius: 25px;
     margin-top: 50px;
     text-align: center;
-    line-height: 50px;
     font-size: 14px;
     letter-spacing: 2px;
     background-color: #4b70e2;
