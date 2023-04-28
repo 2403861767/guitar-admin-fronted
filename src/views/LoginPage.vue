@@ -176,7 +176,6 @@ const login = async () => {
         message.error(res.message)
     }
 }
-// TODO 待测试
 const register = async () => {
     const res = await myAxios.post('/user/register', registerForm)
     if (res.code === 0){

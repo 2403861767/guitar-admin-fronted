@@ -2,8 +2,15 @@ import {createRouter, createWebHashHistory} from "vue-router";
 
 
 const routes = [
-    { path: '/', component: ()=>import('../layouts/BaseLayout.vue') },
-    { path: '/login', component: ()=>import('../views/LoginPage.vue') },
+    {
+        path: '/', redirect: '/index',component: () => import('../layouts/BaseLayout.vue'),
+        children: [
+            {path: '/index', component: () => import('../views/IndexPage.vue')},
+            {path: '/user', component: () => import('../views/UserManagePage.vue')},
+        ],
+
+    },
+    {path: '/login', component: () => import('../views/LoginPage.vue')},
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置

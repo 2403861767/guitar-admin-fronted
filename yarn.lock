@@ -14,7 +14,7 @@
   "resolved" "https://registry.npmmirror.com/@ant-design/icons-svg/-/icons-svg-4.2.1.tgz"
   "version" "4.2.1"
 
-"@ant-design/icons-vue@^6.1.0":
+"@ant-design/icons-vue@^6.0.1", "@ant-design/icons-vue@^6.1.0":
   "integrity" "sha512-EX6bYm56V+ZrKN7+3MT/ubDkvJ5rK/O2t380WFRflDcVFgsvl3NLH7Wxeau6R8DbrO5jWR6DSTC3B6gYFp77AA=="
   "resolved" "https://registry.npmmirror.com/@ant-design/icons-vue/-/icons-vue-6.1.0.tgz"
   "version" "6.1.0"
@@ -91,6 +91,15 @@
   dependencies:
     "core-js" "^3.15.1"
     "nanopop" "^2.1.0"
+
+"@surely-vue/table@^3.0.4":
+  "integrity" "sha512-pGb11aacBeg8dzP1K0w4I4Gal5+v6Cb3eDs5SCpaTsSK7C6S7m5gv5zWgr9ynglJ3Mro0wg1/PnZVze8rVzLvA=="
+  "resolved" "https://registry.npmmirror.com/@surely-vue/table/-/table-3.0.4.tgz"
+  "version" "3.0.4"
+  dependencies:
+    "@ant-design/icons-vue" "^6.0.1"
+    "lodash-es" "^4.17.21"
+    "resize-observer-polyfill" "^1.5.1"
 
 "@types/eslint-scope@^3.7.3":
   "integrity" "sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA=="
@@ -423,7 +432,7 @@
     "json-schema-traverse" "^0.4.1"
     "uri-js" "^4.2.2"
 
-"ant-design-vue@^3.2.19":
+"ant-design-vue@^2.0.0 || ^3.1.0 || ^3.3.0-0", "ant-design-vue@^3.2.19":
   "integrity" "sha512-weizTa70qNhyj8tOoplTcpt85OkVHpnreK2skdTmORFAGDGvF15zyoqCNg2tByzn2xxf2DloQQvZYKlN/i0CGw=="
   "resolved" "https://registry.npmmirror.com/ant-design-vue/-/ant-design-vue-3.2.19.tgz"
   "version" "3.2.19"
@@ -868,7 +877,7 @@
   "resolved" "https://registry.npmmirror.com/loader-runner/-/loader-runner-4.3.0.tgz"
   "version" "4.3.0"
 
-"lodash-es@^4.17.15":
+"lodash-es@^4.17.15", "lodash-es@^4.17.21":
   "integrity" "sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw=="
   "resolved" "https://registry.npmmirror.com/lodash-es/-/lodash-es-4.17.21.tgz"
   "version" "4.17.21"
@@ -1249,7 +1258,7 @@
   dependencies:
     "is-plain-object" "3.0.1"
 
-"vue@^3.0.0", "vue@^3.2.0", "vue@^3.2.25", "vue@^3.2.47", "vue@>=3.0.3", "vue@>=3.2.0", "vue@3.2.47":
+"vue@^3.0.0", "vue@^3.2.0", "vue@^3.2.25", "vue@^3.2.34", "vue@^3.2.47", "vue@>=3.0.3", "vue@>=3.2.0", "vue@3.2.47":
   "integrity" "sha512-60188y/9Dc9WVrAZeUVSDxRQOZ+z+y5nO2ts9jWXSTkMvayiWxCWOWtBQoYjLeccfXkiiPZWAHcV+WTPhkqJHQ=="
   "resolved" "https://registry.npmmirror.com/vue/-/vue-3.2.47.tgz"
   "version" "3.2.47"
