@@ -5,7 +5,7 @@
                 <div class="logo"/>
                 <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
                     <a-menu-item key="1" @click="router.push('/index')">
-                        <user-outlined/>
+                        <home-outlined />
                         <span>主页</span>
                     </a-menu-item>
                     <a-menu-item key="2" @click="router.push('/user')">
@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import {
     UserOutlined,
-    VideoCameraOutlined,
+    HomeOutlined,
     UploadOutlined,
     MenuUnfoldOutlined,
     MenuFoldOutlined,
@@ -80,6 +80,7 @@ import {
 import {defineComponent, reactive, ref, watch} from 'vue';
 import myAxios from "../plugins/myAxios.ts";
 import {useRouter} from "vue-router";
+import {message} from "ant-design-vue";
 const router = useRouter()
 const selectedKeys = ref<string[]>(['1']);
 const openKeys = ref<string[]>(['sub1']);
@@ -92,8 +93,10 @@ const toggleCollapsed = () => {
 const logout = async () => {
     const res = await myAxios.post('/user/logout')
     if (res.code === 0){
-        router.replace('/login')
+        await router.replace('/login')
         localStorage.removeItem('user')
+    }else {
+        message.error('出现错误')
     }
 }
 
