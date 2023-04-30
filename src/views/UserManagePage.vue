@@ -1,190 +1,111 @@
 <template>
     <div>
-        <a-table
-                :columns="columns"
-                :data-source="userData"
-                :pagination="pagination"
-                bordered
-        >
-            <template #headerCell="{ column }">
-                <template v-if="column.key === 'name'">
-        <span>
-          <smile-outlined/>
-          Name
-        </span>
+        <div style="display: flex">
+            <div style="flex: 1">
+                <el-input v-model="searchText" style="width: 200px" size="middle"
+                          placeholder="请输入搜索关键字"
+                          :prefix-icon="Search"
+                          @clear="removeAll" @change="searchUser" clearable />
+            </div>
+            <div>
+                <el-button type="primary" >添加用户</el-button>
+            </div>
+        </div>
+        <el-table :data="userList" style="width: 100%;margin-top: 20px;" border>
+            <el-table-column prop="id" label="ID" width="80"/>
+            <el-table-column prop="userAccount" label="账号"/>
+            <el-table-column prop="userName" label="昵称"/>
+            <el-table-column prop="age" label="年龄"/>
+            <el-table-column prop="gender" label="性别"/>
+            <el-table-column prop="userStatus" label="状态"/>
+            <el-table-column prop="userRole" label="角色"/>
+            <el-table-column prop="operation" label="操作" width="200">
+                <template #default="scope">
+                    <el-button link size="large">详细</el-button>
+                    <el-button link type="primary" size="large">编辑</el-button>
+                    <el-button link type="danger" size="large">删除</el-button>
                 </template>
-            </template>
+            </el-table-column>
 
-            <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'name'">
-                    <a>
-                        {{ record.name }}
-                    </a>
-                </template>
-                <template v-else-if="column.key === 'tags'">
-        <span>
-          <a-tag
-                  v-for="tag in record.tags"
-                  :key="tag"
-                  :color="tag === 'loser' ? 'volcano' : tag.length > 5 ? 'geekblue' : 'green'"
-          >
-            {{ tag.toUpperCase() }}
-          </a-tag>
-        </span>
-                </template>
-                <template v-else-if="column.key === 'operation'">
-        <span>
-          <a>详细信息</a>
-          <a-divider type="vertical"/>
-          <a>删除</a>
-          <a-divider type="vertical"/>
-          <a>编辑</a>
-        </span>
-                </template>
-            </template>
-            <!--            表格上面-->
-            <template #title>
-                <a-button>添加</a-button>
+        </el-table>
+        <el-pagination
+            style="justify-content: center;margin-top: 20px;"
+                v-model:current-page="current"
+                v-model:page-size="pageSize"
+                background
+                layout="prev, pager, next, total"
+                :total="total"
+                @current-change="handleCurrentChange"
 
-                <a-input-search
-                        v-model:value="searchText"
-                        placeholder="请输入搜索的关键字"
-                        size="middle"
-                        style="width: 200px"
-                        @search="onSearch"
-                />
-            </template>
-        </a-table>
+
+        />
     </div>
 </template>
 
 <script lang="ts" setup>
-import {SmileOutlined, DownOutlined} from '@ant-design/icons-vue';
-import {onMounted, reactive, ref} from "vue";
+import { Search } from '@element-plus/icons-vue'
+import {computed, onMounted, reactive, ref} from "vue";
 import myAxios from "../plugins/myAxios.ts";
 import {message} from "ant-design-vue";
 
+const userList = ref([])
 const searchText = ref('')
+const total = ref(0);
 const current = ref(1)
-const pageSize = ref(10)
-// 分页插件
-const pagination = reactive({
-    total: 0,
-    defaultCurrent: current.value,
-    defaultPageSize: pageSize.value,
-    showTotal: total => `共 ${total} 条数据`,
-    showSizeChanger: true,
-    pageSizeOptions: ['5', '10', '15'],
-    onShowSizeChange: (pageNum, pagesize) => {
-        current.value = pageNum;
-        pageSize.value = pagesize;
-        pageQuery();
-    },
-    position: ['bottomCenter'],
-    change: (pageNum, pagesize) => {
-        current.value = pageNum;
-        pageSize.value = pagesize;
-    }
-})
-
-const columns = [
-    {
-        title: '账号',
-        dataIndex: 'userAccount',
-        key: 'userAccount',
-    },
-    {
-        title: '昵称',
-        dataIndex: 'userName',
-        key: 'userName',
-    },
-    {
-        title: '年龄',
-        dataIndex: 'age',
-        key: 'age',
-    },
-    {
-        title: '性别',
-        dataIndex: 'gender',
-        key: 'gender',
-    },
-    {
-        title: '状态',
-        dataIndex: 'userStatus',
-        key: 'userStatus',
-    },
-    {
-        title: '角色',
-        key: 'userRole',
-        dataIndex: 'userRole',
-    },
-    {
-        title: '操作',
-        key: 'operation',
-        width: 200
-    },
-];
-// mock 数据
-const data = [
-    {
-        key: '1',
-        name: 'John Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-        tags: ['nice', 'developer'],
-    },
-    {
-        key: '2',
-        name: 'Jim Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-        tags: ['loser'],
-    },
-    {
-        key: '3',
-        name: 'Joe Black',
-        age: 32,
-        address: 'Sidney No. 1 Lake Park',
-        tags: ['cool', 'teacher'],
-    },
-];
-
-interface userData {
-    userAccount: string,
-    userName: string,
-    userAvatar: string,
-    gender: string,
-    userProfile: string,
-    userRole: string,
-    age: number,
-    userStatus: number,
-    createTime: Date,
-}
-
-const queryRequest = reactive({
+const pageSize = ref(15)
+const params = {
     current: current.value,
     pageSize: pageSize.value,
-    searchText: searchText.value
-})
-const pageQuery = async () => {
-    const res = await myAxios.post('/user/list/page', queryRequest)
+    // TODO
+    searchText: searchText.value,
+}
+const handleCurrentChange = async (val) => {
+    current.value = val
+    params.current = val
+    console.log("current ->", current.value)
+    console.log("params.current -> ", params.current)
+    await getUserList()
+}
+const searchUser = async (value)=>{
+    params.current = 1
+    current.value = 1
+    searchText.value = value
+    params.searchText = value
+    await getUserList()
+}
+const removeAll = async () =>{
+    params.current = 1
+    current.value = 1
+    searchText.value = ''
+    params.searchText = ''
+    await getUserList()
+}
+// 分页查询
+const getUserList = async () => {
+    const res = await myAxios.post('/user/list/page', params)
     if (res.code === 0) {
-        userData.value = res.data.userList
-        pagination.total = res.data.total
+        userList.value = res.data.userList
+        total.value = res.data.total
+        message.success('获取数据成功')
     } else {
-        message.error('获取数据出错!')
+        message.error("获取数据失败")
+    }
+
+
+}
+// 只能在测试阶段用
+const getAllList = async () => {
+    const res = await myAxios.get('/user/list')
+    if (res.code === 0) {
+        message.success('获取数据成功')
+        userList.value = res.data
+    } else {
+        message.error("获取数据失败")
     }
 }
-const userData = ref([])
 onMounted(async () => {
-    await pageQuery()
-    // const res = await myAxios.get('/user/list')
-    // if (res.code === 0) {
-    //     userData.value = res.data
-    //     console.log(userData.value)
-    // } else {
-    //     message.error('获取出错!')
-    // }
+    await getUserList()
+
 })
 </script>
 
