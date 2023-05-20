@@ -17,7 +17,16 @@
             <el-table-column prop="userName" label="昵称"/>
             <el-table-column prop="age" label="年龄"/>
             <el-table-column prop="gender" label="性别"/>
-            <el-table-column prop="userStatus" label="状态"/>
+            <el-table-column prop="userStatus" label="状态">
+                <template #default="scope">
+                    <el-tag
+                            :type="scope.row.userStatus === '正常' ? 'success' :scope.row.userStatus === '封禁'?'success':scope.row.userStatus === '会员'?'danger':''"
+                            disable-transitions
+                    >{{ scope.row.userStatus }}
+                    </el-tag
+                    >
+                </template>
+            </el-table-column>
             <el-table-column prop="userRole" label="角色"/>
             <el-table-column prop="operation" label="操作" width="200">
                 <template #default="scope">
@@ -52,6 +61,7 @@
                 v-model="dialogVisible"
                 :title="`${addOrUpdate}用户`"
                 width="30%"
+                @close="doCancel"
         >
             <el-form :model="formData" ref="formRef">
                 <el-form-item prop="userAccount" label="账号">
@@ -90,6 +100,9 @@
                               type="textarea"/>
                 </el-form-item>
                 <!--                TODO 头像-->
+                <el-form-item v-if="addOrUpdate!=='修改'" prop="userAvatar" label="上传头像">
+                    <van-uploader v-model="userAvatar" :max-count="1" :after-read="afterRead" />
+                </el-form-item>
             </el-form>
             <template #footer>
       <span class="dialog-footer">
@@ -118,11 +131,11 @@
                     <a-image-preview-group>
                         <a-image v-if="detailUser.userAvatar!=null" :width="200" :src="detailUser.userAvatar"/>
                         <a-image
-                            v-else
-                            :width="200"
-                            :height="200"
-                            src="https://www.antdv.com/#error"
-                            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3PTWBSGcbGzM6GCKqlIBRV0dHRJFarQ0eUT8LH4BnRU0NHR0UEFVdIlFRV7TzRksomPY8uykTk/zewQfKw/9znv4yvJynLv4uLiV2dBoDiBf4qP3/ARuCRABEFAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghgg0Aj8i0JO4OzsrPv69Wv+hi2qPHr0qNvf39+iI97soRIh4f3z58/u7du3SXX7Xt7Z2enevHmzfQe+oSN2apSAPj09TSrb+XKI/f379+08+A0cNRE2ANkupk+ACNPvkSPcAAEibACyXUyfABGm3yNHuAECRNgAZLuYPgEirKlHu7u7XdyytGwHAd8jjNyng4OD7vnz51dbPT8/7z58+NB9+/bt6jU/TI+AGWHEnrx48eJ/EsSmHzx40L18+fLyzxF3ZVMjEyDCiEDjMYZZS5wiPXnyZFbJaxMhQIQRGzHvWR7XCyOCXsOmiDAi1HmPMMQjDpbpEiDCiL358eNHurW/5SnWdIBbXiDCiA38/Pnzrce2YyZ4//59F3ePLNMl4PbpiL2J0L979+7yDtHDhw8vtzzvdGnEXdvUigSIsCLAWavHp/+qM0BcXMd/q25n1vF57TYBp0a3mUzilePj4+7k5KSLb6gt6ydAhPUzXnoPR0dHl79WGTNCfBnn1uvSCJdegQhLI1vvCk+fPu2ePXt2tZOYEV6/fn31dz+shwAR1sP1cqvLntbEN9MxA9xcYjsxS1jWR4AIa2Ibzx0tc44fYX/16lV6NDFLXH+YL32jwiACRBiEbf5KcXoTIsQSpzXx4N28Ja4BQoK7rgXiydbHjx/P25TaQAJEGAguWy0+2Q8PD6/Ki4R8EVl+bzBOnZY95fq9rj9zAkTI2SxdidBHqG9+skdw43borCXO/ZcJdraPWdv22uIEiLA4q7nvvCug8WTqzQveOH26fodo7g6uFe/a17W3+nFBAkRYENRdb1vkkz1CH9cPsVy/jrhr27PqMYvENYNlHAIesRiBYwRy0V+8iXP8+/fvX11Mr7L7ECueb/r48eMqm7FuI2BGWDEG8cm+7G3NEOfmdcTQw4h9/55lhm7DekRYKQPZF2ArbXTAyu4kDYB2YxUzwg0gi/41ztHnfQG26HbGel/crVrm7tNY+/1btkOEAZ2M05r4FB7r9GbAIdxaZYrHdOsgJ/wCEQY0J74TmOKnbxxT9n3FgGGWWsVdowHtjt9Nnvf7yQM2aZU/TIAIAxrw6dOnAWtZZcoEnBpNuTuObWMEiLAx1HY0ZQJEmHJ3HNvGCBBhY6jtaMoEiJB0Z29vL6ls58vxPcO8/zfrdo5qvKO+d3Fx8Wu8zf1dW4p/cPzLly/dtv9Ts/EbcvGAHhHyfBIhZ6NSiIBTo0LNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiEC/wGgKKC4YMA4TAAAAABJRU5ErkJggg=="
+                                v-else
+                                :width="200"
+                                :height="200"
+                                src="https://www.antdv.com/#error"
+                                fallback="data:image/png;base64,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"
                         />
                     </a-image-preview-group>
                     <!--                    <a-avatar :size="64">-->
@@ -133,7 +146,7 @@
                 </div>
                 <div style="margin-top: 20px;">
                     <span>账号：</span>
-                    <span>{{detailUser.userAccount}}</span>
+                    <span>{{ detailUser.userAccount }}</span>
                 </div>
                 <div style="margin-top: 20px;">
                     <span>昵称：</span>
@@ -157,7 +170,7 @@
                 </div>
                 <div style="margin-top: 20px;">
                     <span>创建时间：</span>
-                    <span>{{ detailUser.createTime}}</span>
+                    <span>{{ detailUser.createTime }}</span>
                 </div>
             </div>
         </a-drawer>
@@ -165,11 +178,15 @@
 </template>
 
 <script lang="ts" setup>
-import {Search, UserOutined} from '@element-plus/icons-vue'
+import {Search} from '@element-plus/icons-vue'
 import {computed, onMounted, reactive, ref} from "vue";
 import myAxios from "../plugins/myAxios.ts";
-import {FormInstance, message} from "ant-design-vue";
-import {UserOutlined} from "@ant-design/icons-vue";
+import {FormInstance, message, UploadChangeParam} from "ant-design-vue";
+import {UserOutlined, PlusOutlined, LoadingOutlined} from "@ant-design/icons-vue";
+import {ElMessage, UploadProps} from "element-plus";
+import {Plus, Delete, Download, ZoomIn} from '@element-plus/icons-vue'
+import {FileType} from "ant-design-vue/es/upload/interface";
+import { Uploader } from 'vant';
 
 const visible = ref(false)
 const addOrUpdate = ref('添加')
@@ -185,14 +202,31 @@ const formData = reactive({
     userName: "",
     userStatus: '正常',
     userProfile: "",
+    userAvatar:"",
 })
+// 上传头像
+const userAvatar = ref([])
+const fileList = ref([]);
+
+const afterRead =async (file) => {
+    // 此时可以自行将文件上传至服务器
+    console.log('afterRead',file);
+    const res = await myAxios.post('/oss/upload',file, {
+        headers: {"Content-Type": "multipart/form-data"}
+    })
+    if (res.code === 0){
+        userAvatar.value[0] = res.data
+        formData.userAvatar = userAvatar.value[0]
+        console.log(userAvatar.value[0])
+    }
+};
 
 
 // 分页
 const searchText = ref('')
 const total = ref(0);
 const current = ref(1)
-const pageSize = ref(15)
+const pageSize = ref(10)
 // 分页参数
 const params = {
     current: current.value,
@@ -226,7 +260,28 @@ const removeAll = async () => {
 const getUserList = async () => {
     const res = await myAxios.post('/user/list/page', params)
     if (res.code === 0) {
-        userList.value = res.data.userList
+        const temp = res.data.userList
+        temp.forEach((tempUser) => {
+            if (tempUser.userStatus === 0) {
+                tempUser.userStatus = '正常'
+            } else if (tempUser.userStatus === 1) {
+                tempUser.userStatus = '会员'
+            } else {
+                tempUser.userStatus = '封号'
+            }
+            if (tempUser.userRole === 'user') {
+                tempUser.userRole = '普通用户'
+            } else if (tempUser.userRole === 'admin') {
+                tempUser.userRole = '管理员'
+            } else if (tempUser.userRole === 'superAdmin') {
+                tempUser.userRole = '超级管理员'
+            } else if (tempUser.userRole === 'sharer') {
+                tempUser.userRole = '分享者'
+            } else {
+                tempUser.userRole = '制谱师'
+            }
+        })
+        userList.value = temp
         total.value = res.data.total
         message.success('获取数据成功')
     } else {
@@ -249,6 +304,7 @@ const getAllList = async () => {
 const doAdd = () => {
     dialogVisible.value = true
     addOrUpdate.value = '添加'
+
 }
 const doUpdate = async (row) => {
     console.log('row ->', row)
@@ -262,13 +318,14 @@ const doUpdate = async (row) => {
     formData.userName = tempUser.userName
     formData.gender = tempUser.gender
     formData.userProfile = tempUser.userProfile
-    if (tempUser.userStatus === 0) {
-        formData.userStatus = '正常'
-    } else if (tempUser.userStatus === 1) {
-        formData.userStatus = '会员'
-    } else {
-        formData.userStatus = '封号'
-    }
+    formData.userStatus = tempUser.userStatus
+    // if (tempUser.userStatus === 0) {
+    //     formData.userStatus = '正常'
+    // } else if (tempUser.userStatus === 1) {
+    //     formData.userStatus = '会员'
+    // } else {
+    //     formData.userStatus = '封号'
+    // }
 }
 const doConfirm = async () => {
     // 新增参数
@@ -276,7 +333,8 @@ const doConfirm = async () => {
         userAccount: formData.userAccount,
         gender: formData.gender,
         age: formData.age,
-        userRole: formData.userRole
+        userRole: formData.userRole,
+        userAvatar: formData.userAvatar,
     })
     // 修改参数
     const tempUserStatus = ref(0)
@@ -295,14 +353,17 @@ const doConfirm = async () => {
         userRole: formData.userRole,
         userName: formData.userName,
         userStatus: tempUserStatus.value,
-        userProfile: formData.userProfile
+        userProfile: formData.userProfile,
+        userAvatar: formData.userAvatar,
+
+
     })
     // 1. 判断是新增还是删除
     if (addOrUpdate.value === '添加') {
         const res = await myAxios.post('/user/add', addRequest)
         if (res.code === 0) {
             message.success('添加成功')
-            doCancel()
+            await doCancel()
             // dialogVisible.value = false
             // // 清空表单
             // formRef.value?.resetFields()
@@ -370,16 +431,16 @@ const showDetail = async (id) => {
     const res = await myAxios.get('/user/get/' + id)
     if (res.code === 0) {
         detailUser.value = res.data
-        if (detailUser.value.userStatus === 0){
+        if (detailUser.value.userStatus === 0) {
             detailUser.value.userStatus = '正常'
-        }else if (detailUser.value.userStatus === 1){
+        } else if (detailUser.value.userStatus === 1) {
             detailUser.value.userStatus = '会员'
-        }else {
+        } else {
             detailUser.value.userStatus = '封禁'
         }
         message.success('获取成功!')
         console.log(detailUser.value)
-    }else {
+    } else {
         message.error('获取失败!')
     }
 }

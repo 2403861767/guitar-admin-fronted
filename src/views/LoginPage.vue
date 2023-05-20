@@ -170,7 +170,7 @@ const login = async () => {
     const res = await myAxios.post('/user/login',loginForm)
     if (res.code === 0){
         message.success('登录成功')
-        localStorage.setItem('user',JSON.stringify(res.data))
+        sessionStorage.setItem('user',JSON.stringify(res.data))
         await router.replace('/')
     }else {
         message.error(res.message)
@@ -212,7 +212,7 @@ const register = async () => {
   border-radius: 12px;
   overflow: hidden;
   margin: auto;
-  top: 10rem;
+  top: 3rem;
 
   .container {
     display: flex;
